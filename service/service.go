@@ -23,10 +23,10 @@ type Service struct {
 }
 
 func New(url, port string, limit uint) *Service {
-	period, err := LimitToDuration(limit)
+	period, err := LimitToPeriod(limit)
 	if err != nil {
 		limit = 1
-		period, _ = LimitToDuration(limit)
+		period, _ = LimitToPeriod(limit)
 	}
 	srv := &Service{
 		URL:    url,
@@ -44,11 +44,13 @@ func (this *Service) initLogger() {
 	this.logger = log.New(os.Stdin, fmt.Sprintf("[ganache]"), log.Lshortfile)
 }
 
-func LimitToDuration(limit uint) (time.Duration, error) {
+func LimitToPeriod(limit uint) (time.Duration, error) {
 	if limit == 0 {
 		return 0, errors.New("Division with zero")
 	}
-	return time.Duration(time.Duration(60/limit) * time.Minute), nil
+
+	period := (60.0/float64(limit))*60
+	return (time.Duration(period) * time.Second), nil
 }
 
 func NewFromJSON(jsonBlob []byte) (*Service, error) {
@@ -57,10 +59,10 @@ func NewFromJSON(jsonBlob []byte) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	srv.Period, err = LimitToDuration(srv.Limit)
+	srv.Period, err = LimitToPeriod(srv.Limit)
 	if err != nil {
 		srv.Limit = 1
-		srv.Period, _ = LimitToDuration(srv.Limit)
+		srv.Period, _ = LimitToPeriod(srv.Limit)
 	}
 	srv.initLogger()
 	return &srv, nil
@@ -178,6 +180,7 @@ func (this *Service) HomeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *Service) InfoHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(200)
 	w.Write([]byte(this.Info()))
 }
 
