@@ -23,7 +23,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	srv, _ := service.NewFromFile("config.json")
+	srv, _ := service.NewFromFile(configFile)
 	log.Println(srv.Info())
 	config, err := srv.JSON()
 	log.Println(string(config))
