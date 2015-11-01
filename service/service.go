@@ -129,7 +129,6 @@ func (this *Service) Collect() {
 					return
 				}
 
-				// TODO Store header info?
 				newItem := item.New(now, payload)
 				this.Cache = newItem
 				cacheFilename := "cache.json"
