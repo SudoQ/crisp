@@ -22,16 +22,15 @@ func init() {
 	flag.StringVar(&configFilename, "f", "config.json", "Path to configuration file")
 	flag.StringVar(&url, "url", "http://whatthecommit.com/index.txt", "URL to cache")
 	flag.StringVar(&port, "p", "8080", "Port number of the ganache service")
-	flag.UintVar(&limit, "l", 60 ,"Limit of requests per hour")
+	flag.UintVar(&limit, "l", 60, "Limit of requests per hour")
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
-
 
 func main() {
 	flag.Parse()
 
 	useConfig := false
-	flag.Visit(func(flg *flag.Flag){
+	flag.Visit(func(flg *flag.Flag) {
 		if flg.Name == "f" {
 			useConfig = true
 		}

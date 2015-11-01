@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestLimitToPeriod(t *testing.T){
+func TestLimitToPeriod(t *testing.T) {
 	var dur time.Duration
 	dur, _ = LimitToPeriod(60)
 	t.Log(dur)
@@ -14,7 +14,7 @@ func TestLimitToPeriod(t *testing.T){
 	}
 	dur, _ = LimitToPeriod(120)
 	t.Log(dur)
-	if dur != (30*time.Second) {
+	if dur != (30 * time.Second) {
 		t.Fail()
 	}
 }

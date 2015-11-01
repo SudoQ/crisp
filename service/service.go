@@ -9,9 +9,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
-	"net/url"
 )
 
 type Service struct {
@@ -44,7 +44,7 @@ func New(targetUrl, port string, limit uint) *Service {
 func (this *Service) initLogger() {
 	u, err := url.Parse(this.URL)
 	label := u.Host
-	if err != nil{
+	if err != nil {
 		label = "?"
 	}
 	this.logger = log.New(os.Stdin, fmt.Sprintf("ganache[%s]: ", label), log.Lshortfile)
@@ -55,7 +55,7 @@ func LimitToPeriod(limit uint) (time.Duration, error) {
 		return 0, errors.New("Division with zero")
 	}
 
-	period := (60.0/float64(limit))*60
+	period := (60.0 / float64(limit)) * 60
 	return (time.Duration(period) * time.Second), nil
 }
 
@@ -111,7 +111,7 @@ func (this *Service) SaveConfig(filename string) error {
 
 func (this *Service) Collect() {
 	for {
-		func(){
+		func() {
 			now := time.Now()
 			timeDelta := now.Sub(this.Cache.Timestamp)
 			if this.Cache.Timestamp.Before(now) && timeDelta > this.Period {
