@@ -35,3 +35,6 @@ Session.vim
 .netrwhist
 *~
 
+### Application Specifics ###
+cache.json
+config.json
