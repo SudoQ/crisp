@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -18,6 +19,7 @@ type Service struct {
 	Period time.Duration `json:"-"`
 	Limit  uint          `json:"limit"`
 	Cache  *item.Item    `json:"-"`
+	logger *log.Logger   `json:"-"`
 }
 
 func New(url, port string, limit uint) *Service {
@@ -26,13 +28,20 @@ func New(url, port string, limit uint) *Service {
 		limit = 1
 		period, _ = LimitToDuration(limit)
 	}
-	return &Service{
+	srv := &Service{
 		URL:    url,
 		Port:   port,
 		Period: period,
 		Limit:  limit,
 		Cache:  nil,
+		logger: nil,
 	}
+	srv.initLogger()
+	return srv
+}
+
+func (this *Service) initLogger() {
+	this.logger = log.New(os.Stdin, fmt.Sprintf("[ganache]"), log.Lshortfile)
 }
 
 func LimitToDuration(limit uint) (time.Duration, error) {
@@ -53,6 +62,7 @@ func NewFromJSON(jsonBlob []byte) (*Service, error) {
 		srv.Limit = 1
 		srv.Period, _ = LimitToDuration(srv.Limit)
 	}
+	srv.initLogger()
 	return &srv, nil
 }
 
@@ -70,25 +80,16 @@ func (this *Service) LoadConfig(filename string) error {
 		return err
 	}
 	err = json.Unmarshal(jsonBlob, this)
+	this.initLogger()
 	return err
 }
 
 func (this *Service) JSON() ([]byte, error) {
-	// Return service configuration as JSON
 	blob, err := json.Marshal(this)
 	if err != nil {
 		return nil, err
 	}
 	return blob, nil
-}
-
-func (this *Service) Chaos(err error) bool {
-	if err != nil {
-		// TODO Log error
-		log.Println(err)
-		return true
-	}
-	return false
 }
 
 func (this *Service) SaveConfig(filename string) error {
@@ -102,34 +103,36 @@ func (this *Service) SaveConfig(filename string) error {
 
 func (this *Service) Collect() {
 	for {
-		now := time.Now()
-		timeDelta := now.Sub(this.Cache.Timestamp)
-		if this.Cache.Timestamp.Before(now) && timeDelta > this.Period {
-			log.Printf("GET %s\n", this.URL)
+		func(){
+			now := time.Now()
+			timeDelta := now.Sub(this.Cache.Timestamp)
+			if this.Cache.Timestamp.Before(now) && timeDelta > this.Period {
+				this.logger.Printf("GET %s\n", this.URL)
 
-			resp, err := http.Get(this.URL)
-			if this.Chaos(err) {
-				// TODO handle error
-				log.Fatal(err)
+				resp, err := http.Get(this.URL)
+				if err != nil {
+					this.logger.Println(err)
+					return
+				}
+
+				payload, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					this.logger.Println(err)
+					return
+				}
+
+				// TODO Store header info?
+				newItem := item.New(now, payload)
+				this.Cache = newItem
+				cacheFilename := "cache.json"
+				err = this.Cache.WriteFile(cacheFilename)
+				if err != nil {
+					this.logger.Fatal(err)
+				}
+				this.logger.Printf("Saved cache to %s\n", cacheFilename)
+
 			}
-
-			payload, err := ioutil.ReadAll(resp.Body)
-			if this.Chaos(err) {
-				// TODO handle error
-				log.Fatal(err)
-			}
-
-			// TODO Store header info?
-			newItem := item.New(now, payload)
-			this.Cache = newItem
-			cacheFilename := "cache.json"
-			err = this.Cache.WriteFile(cacheFilename)
-			if this.Chaos(err) {
-				log.Fatal(err)
-			}
-			log.Printf("Saved cache to %s\n", cacheFilename)
-
-		}
+		}()
 		select {
 		case <-time.After(this.Period):
 			continue
@@ -157,7 +160,7 @@ func (this *Service) Info() string {
 func (this *Service) Run() {
 	err := this.LoadCache("cache.json")
 	if err != nil {
-		log.Fatal(err)
+		this.logger.Fatal(err)
 	}
 	go this.Collect()
 	r := mux.NewRouter()
@@ -169,6 +172,8 @@ func (this *Service) Run() {
 }
 
 func (this *Service) HomeHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
 	w.Write(this.Cache.Payload)
 }
 
@@ -179,8 +184,11 @@ func (this *Service) InfoHandler(w http.ResponseWriter, r *http.Request) {
 func (this *Service) CacheHandler(w http.ResponseWriter, r *http.Request) {
 	response, err := this.Cache.JSON()
 	if err != nil {
-		// TODO
-		log.Fatal(err)
+		this.logger.Println(err)
+		w.WriteHeader(404)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
 	w.Write(response)
 }
