@@ -9,18 +9,23 @@ import (
 	"time"
 	"net/http"
 	"fmt"
+	"errors"
 )
 
 type Service struct {
 	URL    string `json:"url"`
 	Port   string `json:"port"`
 	Period time.Duration `json:"-"`
-	Limit  int `json:"limit"`
+	Limit  uint `json:"limit"`
 	Cache  *item.Item `json:"-"`
 }
 
-func New(url, port string, limit int) *Service {
-	period := LimitToDuration(limit)
+func New(url, port string, limit uint) *Service {
+	period, err := LimitToDuration(limit)
+	if err != nil {
+		limit = 1
+		period, _ = LimitToDuration(limit)
+	}
 	return &Service{
 		URL:    url,
 		Port:   port,
@@ -30,8 +35,11 @@ func New(url, port string, limit int) *Service {
 	}
 }
 
-func LimitToDuration(limit int) time.Duration {
-	return time.Duration(time.Duration(limit/60) * time.Minute)
+func LimitToDuration(limit uint) (time.Duration, error) {
+	if limit == 0 {
+		return 0, errors.New("Division with zero")
+	}
+	return time.Duration(time.Duration(60/limit) * time.Minute), nil
 }
 
 func NewFromJSON(jsonBlob []byte) (*Service, error) {
@@ -40,7 +48,11 @@ func NewFromJSON(jsonBlob []byte) (*Service, error) {
 	if err != nil{
 		return nil, err
 	}
-	srv.Period = LimitToDuration(srv.Limit)
+	srv.Period, err = LimitToDuration(srv.Limit)
+	if err != nil {
+		srv.Limit = 1
+		srv.Period, _ = LimitToDuration(srv.Limit)
+	}
 	return &srv, nil
 }
 
