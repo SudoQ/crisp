@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"net/url"
 )
 
 type Service struct {
@@ -22,14 +23,14 @@ type Service struct {
 	logger *log.Logger   `json:"-"`
 }
 
-func New(url, port string, limit uint) *Service {
+func New(targetUrl, port string, limit uint) *Service {
 	period, err := LimitToPeriod(limit)
 	if err != nil {
 		limit = 1
 		period, _ = LimitToPeriod(limit)
 	}
 	srv := &Service{
-		URL:    url,
+		URL:    targetUrl,
 		Port:   port,
 		Period: period,
 		Limit:  limit,
@@ -41,7 +42,12 @@ func New(url, port string, limit uint) *Service {
 }
 
 func (this *Service) initLogger() {
-	this.logger = log.New(os.Stdin, fmt.Sprintf("[ganache]"), log.Lshortfile)
+	u, err := url.Parse(this.URL)
+	label := u.Host
+	if err != nil{
+		label = "?"
+	}
+	this.logger = log.New(os.Stdin, fmt.Sprintf("ganache[%s]: ", label), log.Lshortfile)
 }
 
 func LimitToPeriod(limit uint) (time.Duration, error) {
