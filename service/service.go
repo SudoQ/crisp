@@ -150,12 +150,17 @@ func (this *Service) Run() {
 	go this.Collect()
 	r := mux.NewRouter()
 	r.HandleFunc("/", this.HomeHandler)
+	r.HandleFunc("/info", this.InfoHandler)
 	r.HandleFunc("/cache.json", this.CacheHandler)
 	port := fmt.Sprintf(":%s", this.Port)
 	http.ListenAndServe(port, r)
 }
 
 func (this *Service) HomeHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write(this.Cache.Payload)
+}
+
+func (this *Service) InfoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(this.Info()))
 }
 
