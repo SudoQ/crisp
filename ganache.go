@@ -13,24 +13,41 @@ func check(err error) {
 	}
 }
 
-var configFile string
+var configFilename string
+var url string
+var port string
+var limit uint
 
 func init() {
-	flag.StringVar(&configFile, "f", "config.json", "Path to configuration file")
+	flag.StringVar(&configFilename, "f", "config.json", "Path to configuration file")
+	flag.StringVar(&url, "url", "http://whatthecommit.com/index.txt", "URL to cache")
+	flag.StringVar(&port, "p", "8080", "Port number of the ganache service")
+	flag.UintVar(&limit, "l", 60 ,"Limit of requests per hour")
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
+
 
 func main() {
 	flag.Parse()
 
-	srv, _ := service.NewFromFile(configFile)
+	useConfig := false
+	flag.Visit(func(flg *flag.Flag){
+		if flg.Name == "f" {
+			useConfig = true
+		}
+	})
+
+	var srv *service.Service
+	if useConfig {
+		var err error
+		srv, err = service.NewFromFile(configFilename)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+	} else {
+		srv = service.New(url, port, limit)
+	}
 	log.Println(srv.Info())
-	config, err := srv.JSON()
-	log.Println(string(config))
-	check(err)
-	err = srv.SaveConfig("config.json")
-	check(err)
-	err = srv.LoadConfig("config.json")
-	check(err)
 	srv.Run()
 }
