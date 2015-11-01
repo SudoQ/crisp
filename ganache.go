@@ -1,13 +1,13 @@
 package main
 
 import (
+	"flag"
 	"github.com/SudoQ/ganache/service"
 	"log"
-	"flag"
 	"runtime"
 )
 
-func check(err error){
+func check(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,23 +1,23 @@
 package service
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/SudoQ/ganache/item"
 	"github.com/gorilla/mux"
-	"encoding/json"
 	"io/ioutil"
 	"log"
-	"time"
 	"net/http"
-	"fmt"
-	"errors"
+	"time"
 )
 
 type Service struct {
-	URL    string `json:"url"`
-	Port   string `json:"port"`
+	URL    string        `json:"url"`
+	Port   string        `json:"port"`
 	Period time.Duration `json:"-"`
-	Limit  uint `json:"limit"`
-	Cache  *item.Item `json:"-"`
+	Limit  uint          `json:"limit"`
+	Cache  *item.Item    `json:"-"`
 }
 
 func New(url, port string, limit uint) *Service {
@@ -45,7 +45,7 @@ func LimitToDuration(limit uint) (time.Duration, error) {
 func NewFromJSON(jsonBlob []byte) (*Service, error) {
 	var srv Service
 	err := json.Unmarshal(jsonBlob, &srv)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	srv.Period, err = LimitToDuration(srv.Limit)
@@ -124,7 +124,7 @@ func (this *Service) Collect() {
 			this.Cache = newItem
 			cacheFilename := "cache.json"
 			err = this.Cache.WriteFile(cacheFilename)
-			if this.Chaos(err){
+			if this.Chaos(err) {
 				log.Fatal(err)
 			}
 			log.Printf("Saved cache to %s\n", cacheFilename)
@@ -139,7 +139,7 @@ func (this *Service) Collect() {
 
 func (this *Service) LoadCache(filename string) error {
 	content, err := ioutil.ReadFile(filename)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	newItem, err := item.NewFromJSON(content)
@@ -150,7 +150,7 @@ func (this *Service) LoadCache(filename string) error {
 	return nil
 }
 
-func (this * Service) Info() string {
+func (this *Service) Info() string {
 	return fmt.Sprintf("Ganache API caching service v0.1")
 }
 
