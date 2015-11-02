@@ -19,8 +19,10 @@ type Service struct {
 	Port   string        `json:"port"`
 	Period time.Duration `json:"-"`
 	Limit  uint          `json:"limit"`
+	Subscribers []string `json:"subscribers"`
 	Cache  *item.Item    `json:"-"`
 	logger *log.Logger   `json:"-"`
+	cacheCh chan *item.Item
 }
 
 func New(targetUrl, port string, limit uint) *Service {
@@ -34,8 +36,10 @@ func New(targetUrl, port string, limit uint) *Service {
 		Port:   port,
 		Period: period,
 		Limit:  limit,
+		Subscribers: make([]string, 0),
 		Cache:  nil,
 		logger: nil,
+		cacheCh: make(chan *item.Item),
 	}
 	srv.initLogger()
 	return srv
@@ -70,6 +74,7 @@ func NewFromJSON(jsonBlob []byte) (*Service, error) {
 		srv.Limit = 1
 		srv.Period, _ = LimitToPeriod(srv.Limit)
 	}
+	srv.cacheCh = make(chan *item.Item)
 	srv.initLogger()
 	return &srv, nil
 }
@@ -137,7 +142,7 @@ func (this *Service) Collect() {
 					this.logger.Fatal(err)
 				}
 				this.logger.Printf("Saved cache to %s\n", cacheFilename)
-
+				this.cacheCh <- this.Cache
 			}
 		}()
 		select {
@@ -160,14 +165,26 @@ func (this *Service) LoadCache(filename string) error {
 	return nil
 }
 
-func (this *Service) Subscribe() {
+func (this *Service) Subscribe(subUrl string) {
 	// Subscribers provide thier url where the service should send the response
 	// This method adds the subscriber to the subscriber list
+	// TODO Lock here
+	this.Subscribers = append(this.Subscribers, subUrl)
 }
 
 func (this *Service) Publish() {
 	// Listen for new event on a channel from collect
 	// Send out to subscribers
+	for {
+		select {
+		case data := <-this.cacheCh:
+			// Send to subscribers
+			// TODO Lock here
+			for _, sub := range this.Subscribers {
+				log.Printf("POST data %v to url %s", data, sub)
+			}
+		}
+	}
 }
 
 func (this *Service) Info() string {
