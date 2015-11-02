@@ -160,6 +160,16 @@ func (this *Service) LoadCache(filename string) error {
 	return nil
 }
 
+func (this *Service) Subscribe() {
+	// Subscribers provide thier url where the service should send the response
+	// This method adds the subscriber to the subscriber list
+}
+
+func (this *Service) Publish() {
+	// Listen for new event on a channel from collect
+	// Send out to subscribers
+}
+
 func (this *Service) Info() string {
 	return fmt.Sprintf("Crisp API caching service v0.1")
 }
@@ -174,6 +184,7 @@ func (this *Service) Run() {
 	r.HandleFunc("/", this.HomeHandler)
 	r.HandleFunc("/info", this.InfoHandler)
 	r.HandleFunc("/cache.json", this.CacheHandler)
+	r.HandleFunc("/subscribe", this.SubscriptionHandler)
 	port := fmt.Sprintf(":%s", this.Port)
 	http.ListenAndServe(port, r)
 }
@@ -199,4 +210,8 @@ func (this *Service) CacheHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	w.Write(response)
+}
+
+func (this *Service) SubscriptionHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(404)
 }
