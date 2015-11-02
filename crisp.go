@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/SudoQ/crisp/service"
 	"log"
 	"runtime"
-	"fmt"
 )
 
 func check(err error) {
@@ -54,8 +54,8 @@ func main() {
 		if len(flag.Args()) != 1 {
 			log.Println(
 				fmt.Sprintf("Usage: \n\t%s\n\t%s",
-										"crisp [-p=port] [-l=limit] <url>",
-										"crisp -f=<file>"))
+					"crisp [-p=port] [-l=limit] <url>",
+					"crisp -f=<file>"))
 			return
 		}
 		url = flag.Arg(0)
