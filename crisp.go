@@ -5,6 +5,7 @@ import (
 	"github.com/SudoQ/crisp/service"
 	"log"
 	"runtime"
+	"fmt"
 )
 
 func check(err error) {
@@ -40,16 +41,6 @@ func main() {
 		}
 	})
 
-	var url string
-	if len(flag.Args()) != 1 {
-		log.Println(
-			fmt.Sprintf("Usage: \n\t%s\n\t%s",
-									"crisp [-p=port] [-l=limit] <url>",
-									"crisp -f=<file>"))
-		return
-	}
-	url = flag.Arg(0)
-
 	var srv *service.Service
 	if useConfig {
 		var err error
@@ -59,8 +50,18 @@ func main() {
 			return
 		}
 	} else {
+		var url string
+		if len(flag.Args()) != 1 {
+			log.Println(
+				fmt.Sprintf("Usage: \n\t%s\n\t%s",
+										"crisp [-p=port] [-l=limit] <url>",
+										"crisp -f=<file>"))
+			return
+		}
+		url = flag.Arg(0)
 		srv = service.New(url, port, limit)
 	}
+
 	log.Println(srv.Info())
 	srv.Run()
 }
