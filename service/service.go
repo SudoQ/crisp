@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/SudoQ/ganache/item"
+	"github.com/SudoQ/crisp/item"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
@@ -47,7 +47,7 @@ func (this *Service) initLogger() {
 	if err != nil {
 		label = "?"
 	}
-	this.logger = log.New(os.Stdin, fmt.Sprintf("ganache[%s]: ", label), log.Lshortfile)
+	this.logger = log.New(os.Stdin, fmt.Sprintf("crisp[%s]: ", label), log.Lshortfile)
 }
 
 func LimitToPeriod(limit uint) (time.Duration, error) {
@@ -161,7 +161,7 @@ func (this *Service) LoadCache(filename string) error {
 }
 
 func (this *Service) Info() string {
-	return fmt.Sprintf("Ganache API caching service v0.1")
+	return fmt.Sprintf("Crisp API caching service v0.1")
 }
 
 func (this *Service) Run() {
