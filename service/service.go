@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/SudoQ/crisp/item"
 	"github.com/SudoQ/crisp/external"
+	"github.com/SudoQ/crisp/storage"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
@@ -19,7 +20,7 @@ type Service struct {
 	Port   string
 	Period time.Duration
 	Limit  uint
-	Cache  *item.Item
+	Cache  *storage.Store
 	logger *log.Logger
 	ext *external.Ext
 }
@@ -35,7 +36,7 @@ func New(target, port string, limit uint) *Service {
 		Port:   port,
 		Period: period,
 		Limit:  limit,
-		Cache:  nil,
+		Cache:  storage.New(),
 		logger: nil,
 		ext: external.New(target, period),
 	}
@@ -70,7 +71,7 @@ func (this *Service) LoadCache(filename string) error {
 	if err != nil {
 		return err
 	}
-	this.Cache = newItem
+	this.Cache.Add(newItem)
 	return nil
 }
 
@@ -89,9 +90,10 @@ func (this *Service) Run() {
 	go func() {
 		for payload := range dataCh {
 			newItem := item.New(time.Now(), payload)
-			this.Cache = newItem
+			this.Cache.Add(newItem)
 			cacheFilename := "cache.json"
-			err = this.Cache.WriteFile(cacheFilename)
+			latestItem, _ := this.Cache.Get()
+			err = latestItem.WriteFile(cacheFilename)
 			if err != nil {
 				this.logger.Fatal(err)
 			}
@@ -110,7 +112,8 @@ func (this *Service) Run() {
 func (this *Service) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-	w.Write(this.Cache.Payload)
+	latestItem, _ := this.Cache.Get()
+	w.Write(latestItem.Payload)
 }
 
 func (this *Service) InfoHandler(w http.ResponseWriter, r *http.Request) {
@@ -119,7 +122,8 @@ func (this *Service) InfoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *Service) CacheHandler(w http.ResponseWriter, r *http.Request) {
-	response, err := this.Cache.JSON()
+	latestItem, _ := this.Cache.Get()
+	response, err := latestItem.JSON()
 	if err != nil {
 		this.logger.Println(err)
 		w.WriteHeader(404)
