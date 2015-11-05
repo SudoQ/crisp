@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/SudoQ/crisp/item"
@@ -15,12 +14,12 @@ import (
 )
 
 type Service struct {
-	URL    string        `json:"url"`
-	Port   string        `json:"port"`
-	Period time.Duration `json:"-"`
-	Limit  uint          `json:"limit"`
-	Cache  *item.Item    `json:"-"`
-	logger *log.Logger   `json:"-"`
+	URL    string
+	Port   string
+	Period time.Duration
+	Limit  uint
+	Cache  *item.Item
+	logger *log.Logger
 }
 
 func New(targetUrl, port string, limit uint) *Service {
@@ -57,56 +56,6 @@ func LimitToPeriod(limit uint) (time.Duration, error) {
 
 	period := (60.0 / float64(limit)) * 60
 	return (time.Duration(period) * time.Second), nil
-}
-
-func NewFromJSON(jsonBlob []byte) (*Service, error) {
-	var srv Service
-	err := json.Unmarshal(jsonBlob, &srv)
-	if err != nil {
-		return nil, err
-	}
-	srv.Period, err = LimitToPeriod(srv.Limit)
-	if err != nil {
-		srv.Limit = 1
-		srv.Period, _ = LimitToPeriod(srv.Limit)
-	}
-	srv.initLogger()
-	return &srv, nil
-}
-
-func NewFromFile(filename string) (*Service, error) {
-	jsonBlob, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	return NewFromJSON(jsonBlob)
-}
-
-func (this *Service) LoadConfig(filename string) error {
-	jsonBlob, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(jsonBlob, this)
-	this.initLogger()
-	return err
-}
-
-func (this *Service) JSON() ([]byte, error) {
-	blob, err := json.Marshal(this)
-	if err != nil {
-		return nil, err
-	}
-	return blob, nil
-}
-
-func (this *Service) SaveConfig(filename string) error {
-	jsonBlob, err := this.JSON()
-	if err != nil {
-		return err
-	}
-	err = ioutil.WriteFile(filename, jsonBlob, 0644)
-	return err
 }
 
 func (this *Service) Collect() {
