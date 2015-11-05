@@ -1,29 +1,29 @@
 package external
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
-	"io/ioutil"
 )
 
 type Ext struct {
 	url       string
 	timestamp time.Time
 	period    time.Duration
-	init bool
+	init      bool
 	dataCh    chan []byte
-	quitCh		chan bool
+	quitCh    chan bool
 }
 
 func New(url string, period time.Duration) *Ext {
 	return &Ext{
 		url:       url,
 		timestamp: time.Time{},
-		init: true,
+		init:      true,
 		period:    period,
 		dataCh:    make(chan []byte, 0), // Buffer?
-		quitCh: make(chan bool, 0),
+		quitCh:    make(chan bool, 0),
 	}
 }
 
