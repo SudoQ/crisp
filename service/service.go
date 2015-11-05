@@ -92,7 +92,10 @@ func (this *Service) Run() {
 			newItem := item.New(time.Now(), payload)
 			this.Cache.Add(newItem)
 			cacheFilename := "cache.json"
-			latestItem, _ := this.Cache.Get()
+			latestItem, err := this.Cache.Get()
+			if err != nil {
+				this.logger.Fatal(err)
+			}
 			err = latestItem.WriteFile(cacheFilename)
 			if err != nil {
 				this.logger.Fatal(err)
@@ -112,7 +115,12 @@ func (this *Service) Run() {
 func (this *Service) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-	latestItem, _ := this.Cache.Get()
+	latestItem, err := this.Cache.Get()
+	if err != nil {
+		this.logger.Print(err)
+		w.WriteHeader(404)
+		return
+	}
 	w.Write(latestItem.Payload)
 }
 
@@ -122,7 +130,13 @@ func (this *Service) InfoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *Service) CacheHandler(w http.ResponseWriter, r *http.Request) {
-	latestItem, _ := this.Cache.Get()
+	latestItem, err := this.Cache.Get()
+	if err != nil {
+		this.logger.Println(err)
+		w.WriteHeader(404)
+		return
+	}
+
 	response, err := latestItem.JSON()
 	if err != nil {
 		this.logger.Println(err)
