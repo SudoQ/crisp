@@ -1,13 +1,13 @@
 package item
 
 import (
-	"testing"
-	"time"
 	"bytes"
 	"fmt"
+	"testing"
+	"time"
 )
 
-func TestNewSuccess(t *testing.T){
+func TestNewSuccess(t *testing.T) {
 	now := time.Now()
 	payload := []byte("payload")
 	it := New(now, payload)
@@ -19,19 +19,19 @@ func TestNewSuccess(t *testing.T){
 	}
 }
 
-func TestNewFail(t *testing.T){
+func TestNewFail(t *testing.T) {
 	now := time.Now()
 	payload := []byte("payload")
 	it := New(now, payload)
 	if it.Timestamp.Equal(time.Time{}) {
 		t.Fail()
 	}
-	if (bytes.Equal(it.Payload, []byte(""))) {
+	if bytes.Equal(it.Payload, []byte("")) {
 		t.Fail()
 	}
 }
 
-func TestNewFromJSON_1(t *testing.T){
+func TestNewFromJSON_1(t *testing.T) {
 	payload := []byte("payload")
 	timeStr := "2015-11-01T13:32:36.748674638+01:00"
 	var t0 time.Time
@@ -49,7 +49,7 @@ func TestNewFromJSON_1(t *testing.T){
 	}
 }
 
-func TestNewFromJSON_2(t *testing.T){
+func TestNewFromJSON_2(t *testing.T) {
 	now := time.Now()
 	payload := []byte("payload")
 	it0 := New(now, payload)
