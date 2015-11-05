@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SudoQ/crisp/item"
+	"github.com/SudoQ/crisp/external"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
@@ -20,21 +21,23 @@ type Service struct {
 	Limit  uint
 	Cache  *item.Item
 	logger *log.Logger
+	ext *external.Ext
 }
 
-func New(targetUrl, port string, limit uint) *Service {
+func New(target, port string, limit uint) *Service {
 	period, err := LimitToPeriod(limit)
 	if err != nil {
 		limit = 1
 		period, _ = LimitToPeriod(limit)
 	}
 	srv := &Service{
-		URL:    targetUrl,
+		URL:    target,
 		Port:   port,
 		Period: period,
 		Limit:  limit,
 		Cache:  nil,
 		logger: nil,
+		ext: external.New(target, period),
 	}
 	srv.initLogger()
 	return srv
@@ -56,43 +59,6 @@ func LimitToPeriod(limit uint) (time.Duration, error) {
 
 	period := (60.0 / float64(limit)) * 60
 	return (time.Duration(period) * time.Second), nil
-}
-
-func (this *Service) Collect() {
-	for {
-		func() {
-			now := time.Now()
-			timeDelta := now.Sub(this.Cache.Timestamp)
-			if this.Cache.Timestamp.Before(now) && timeDelta > this.Period {
-				this.logger.Printf("GET %s\n", this.URL)
-
-				resp, err := http.Get(this.URL)
-				if err != nil {
-					this.logger.Println(err)
-					return
-				}
-
-				payload, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					this.logger.Println(err)
-					return
-				}
-
-				newItem := item.New(now, payload)
-				this.Cache = newItem
-				cacheFilename := "cache.json"
-				err = this.Cache.WriteFile(cacheFilename)
-				if err != nil {
-					this.logger.Fatal(err)
-				}
-				this.logger.Printf("Saved cache to %s\n", cacheFilename)
-			}
-		}()
-		select {
-		case <-time.After(this.Period):
-			continue
-		}
-	}
 }
 
 func (this *Service) LoadCache(filename string) error {
@@ -117,7 +83,22 @@ func (this *Service) Run() {
 	if err != nil {
 		this.logger.Fatal(err)
 	}
-	go this.Collect()
+	dataCh := this.ext.DataChannel()
+	defer this.ext.Close()
+	go this.ext.Collect()
+	go func() {
+		for payload := range dataCh {
+			newItem := item.New(time.Now(), payload)
+			this.Cache = newItem
+			cacheFilename := "cache.json"
+			err = this.Cache.WriteFile(cacheFilename)
+			if err != nil {
+				this.logger.Fatal(err)
+			}
+			this.logger.Printf("Saved cache to %s\n", cacheFilename)
+		}
+	}()
+
 	r := mux.NewRouter()
 	r.HandleFunc("/", this.HomeHandler)
 	r.HandleFunc("/info", this.InfoHandler)
