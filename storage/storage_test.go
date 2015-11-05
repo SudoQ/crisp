@@ -1,13 +1,13 @@
 package storage
 
 import (
-	"testing"
-	"github.com/SudoQ/crisp/item"
-	"time"
 	"fmt"
+	"github.com/SudoQ/crisp/item"
+	"testing"
+	"time"
 )
 
-func TestAdd(t *testing.T){
+func TestAdd(t *testing.T) {
 	store := New()
 	newItem := item.New(time.Now(), []byte("payload"))
 	store.Add(newItem)
@@ -18,12 +18,12 @@ func TestAdd(t *testing.T){
 
 func TestCurrent(t *testing.T) {
 	store := New()
-	if store.current != (store.size-1) {
+	if store.current != (store.size - 1) {
 		t.Fail()
 	}
 }
 
-func TestGet(t *testing.T){
+func TestGet(t *testing.T) {
 	store := New()
 	newItem := item.New(time.Now(), []byte("payload"))
 	store.Add(newItem)
@@ -36,7 +36,7 @@ func TestGet(t *testing.T){
 	}
 }
 
-func TestAddFull(t *testing.T){
+func TestAddFull(t *testing.T) {
 	store := New()
 	times := 10
 	for i := 0; i < times; i++ {
