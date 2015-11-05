@@ -2,11 +2,6 @@
 
 set -e
 
-if [ ! -f config.json ]; then
-    echo "[+] config.json not found, copying template..."
-    cp .config.json.sample config.json
-fi
-
 if [ ! -f cache.json ]; then
     echo "[+] cache.json not found, copying template..."
     cp .cache.json.sample cache.json
