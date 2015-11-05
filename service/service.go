@@ -3,26 +3,28 @@ package service
 import (
 	"errors"
 	"fmt"
-	"github.com/SudoQ/crisp/item"
 	"github.com/SudoQ/crisp/external"
+	"github.com/SudoQ/crisp/item"
+	"github.com/SudoQ/crisp/resources"
 	"github.com/SudoQ/crisp/storage"
-	"github.com/gorilla/mux"
+	//"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
-	"net/http"
+	//"net/http"
 	"net/url"
 	"os"
 	"time"
 )
 
 type Service struct {
-	URL    string
-	Port   string
-	Period time.Duration
-	Limit  uint
-	Cache  *storage.Store
-	logger *log.Logger
-	ext *external.Ext
+	URL             string
+	Port            string
+	Period          time.Duration
+	Limit           uint
+	Cache           *storage.Store
+	logger          *log.Logger
+	ext             *external.Ext
+	resourceManager *resources.Manager
 }
 
 func New(target, port string, limit uint) *Service {
@@ -32,16 +34,22 @@ func New(target, port string, limit uint) *Service {
 		period, _ = LimitToPeriod(limit)
 	}
 	srv := &Service{
-		URL:    target,
-		Port:   port,
-		Period: period,
-		Limit:  limit,
-		Cache:  storage.New(),
-		logger: nil,
-		ext: external.New(target, period),
+		URL:             target,
+		Port:            port,
+		Period:          period,
+		Limit:           limit,
+		Cache:           storage.New(),
+		logger:          nil,
+		ext:             external.New(target, period),
+		resourceManager: nil,
 	}
 	srv.initLogger()
+	srv.initResouceManager()
 	return srv
+}
+
+func (this *Service) initResouceManager() {
+	this.resourceManager = resources.New(this.Cache)
 }
 
 func (this *Service) initLogger() {
@@ -104,46 +112,5 @@ func (this *Service) Run() {
 		}
 	}()
 
-	r := mux.NewRouter()
-	r.HandleFunc("/", this.HomeHandler)
-	r.HandleFunc("/info", this.InfoHandler)
-	r.HandleFunc("/cache.json", this.CacheHandler)
-	port := fmt.Sprintf(":%s", this.Port)
-	http.ListenAndServe(port, r)
-}
-
-func (this *Service) HomeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	latestItem, err := this.Cache.Get()
-	if err != nil {
-		this.logger.Print(err)
-		w.WriteHeader(404)
-		return
-	}
-	w.Write(latestItem.Payload)
-}
-
-func (this *Service) InfoHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(200)
-	w.Write([]byte(this.Info()))
-}
-
-func (this *Service) CacheHandler(w http.ResponseWriter, r *http.Request) {
-	latestItem, err := this.Cache.Get()
-	if err != nil {
-		this.logger.Println(err)
-		w.WriteHeader(404)
-		return
-	}
-
-	response, err := latestItem.JSON()
-	if err != nil {
-		this.logger.Println(err)
-		w.WriteHeader(404)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	w.Write(response)
+	this.resourceManager.Run(this.Port)
 }
