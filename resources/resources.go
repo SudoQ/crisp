@@ -5,6 +5,7 @@ import (
 	"github.com/SudoQ/crisp/storage"
 	"github.com/gorilla/mux"
 	"net/http"
+	"log"
 )
 
 type Manager struct {
@@ -31,7 +32,7 @@ func (this *Manager) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	latestItem, err := this.cache.Get()
 	if err != nil {
-		//this.logger.Print(err)
+		log.Print(err)
 		w.WriteHeader(404)
 		return
 	}
@@ -50,14 +51,14 @@ func (this *Manager) InfoHandler(w http.ResponseWriter, r *http.Request) {
 func (this *Manager) CacheHandler(w http.ResponseWriter, r *http.Request) {
 	latestItem, err := this.cache.Get()
 	if err != nil {
-		//this.logger.Println(err)
+		log.Println(err)
 		w.WriteHeader(404)
 		return
 	}
 
 	response, err := latestItem.JSON()
 	if err != nil {
-		//this.logger.Println(err)
+		log.Println(err)
 		w.WriteHeader(404)
 		return
 	}
