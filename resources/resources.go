@@ -24,7 +24,7 @@ func (this *Manager) Run() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", this.HomeHandler)
 	r.HandleFunc("/info", this.InfoHandler)
-	r.HandleFunc("/cache.json", this.CacheHandler)
+	r.HandleFunc("/latest.json", this.CacheHandler)
 	port := fmt.Sprintf(":%s", this.port)
 	http.ListenAndServe(port, r)
 }
