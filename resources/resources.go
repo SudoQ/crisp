@@ -10,20 +10,22 @@ import (
 
 type Manager struct {
 	cache *storage.Store
+	port string
 }
 
-func New(store *storage.Store) *Manager {
+func New(store *storage.Store, port string) *Manager {
 	return &Manager{
 		cache: store,
+		port: "8080",
 	}
 }
 
-func (this *Manager) Run(rawport string) {
+func (this *Manager) Run() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", this.HomeHandler)
 	r.HandleFunc("/info", this.InfoHandler)
 	r.HandleFunc("/cache.json", this.CacheHandler)
-	port := fmt.Sprintf(":%s", rawport)
+	port := fmt.Sprintf(":%s", this.port)
 	http.ListenAndServe(port, r)
 }
 
@@ -32,7 +34,7 @@ func (this *Manager) logAccess(r *http.Request) {
 }
 
 func (this *Manager) Info() string {
-	return fmt.Sprintf("Crisp API caching service v0.1")
+	return fmt.Sprintf("Crisp Service v0.1")
 }
 
 func (this *Manager) HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +44,7 @@ func (this *Manager) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	latestItem, err := this.cache.Get()
 	if err != nil {
 		log.Print(err)
-		w.WriteHeader(404)
+		w.WriteHeader(500)
 		return
 	}
 	w.Write(latestItem.Payload)
@@ -59,14 +61,14 @@ func (this *Manager) CacheHandler(w http.ResponseWriter, r *http.Request) {
 	latestItem, err := this.cache.Get()
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(404)
+		w.WriteHeader(500)
 		return
 	}
 
 	response, err := latestItem.JSON()
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(404)
+		w.WriteHeader(500)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

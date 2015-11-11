@@ -49,7 +49,7 @@ func New(target, port string, limit uint) *Service {
 }
 
 func (this *Service) initResouceManager() {
-	this.resourceManager = resources.New(this.Cache)
+	this.resourceManager = resources.New(this.Cache, this.Port)
 }
 
 func (this *Service) initLogger() {
@@ -98,5 +98,5 @@ func (this *Service) Run() {
 		}
 	}()
 
-	this.resourceManager.Run(this.Port)
+	this.resourceManager.Run()
 }
