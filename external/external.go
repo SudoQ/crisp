@@ -1,8 +1,9 @@
 package external
 
 import (
+	"fmt"
+	"github.com/SudoQ/crisp/logging"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -44,17 +45,17 @@ func (this *Ext) Collect() {
 		timeCondition := (this.timestamp.Before(now) && timeDelta > this.period)
 		if timeCondition || this.init {
 			this.init = false
-			log.Printf("GET %s\n", this.url)
+			logging.Info(fmt.Sprintf("GET %s", this.url))
 
 			resp, err := http.Get(this.url)
 			if err != nil {
-				log.Println(err)
+				logging.Error(err)
 				return
 			}
 
 			payload, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				log.Println(err)
+				logging.Error(err)
 				return
 			}
 			this.dataCh <- payload

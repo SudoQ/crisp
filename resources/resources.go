@@ -39,14 +39,14 @@ func (this *Manager) Info() string {
 
 func (this *Manager) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	this.logAccess(r)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
 	latestItem, err := this.cache.Get()
 	if err != nil {
 		logging.Error(err)
 		w.WriteHeader(500)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
 	w.Write(latestItem.Payload)
 }
 

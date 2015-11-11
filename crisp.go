@@ -4,15 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/SudoQ/crisp/service"
-	"log"
+	"github.com/SudoQ/crisp/logging"
 	"runtime"
 )
-
-func check(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 var port string
 var limit uint
@@ -31,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	if len(flag.Args()) != 1 {
-		log.Println(
+		logging.Info(
 			fmt.Sprintf("Usage: \n\t%s\n\t%s",
 				"crisp [-p=port] [-l=limit] <url>",
 				"crisp -f=<file>"))
@@ -40,6 +34,6 @@ func main() {
 	url := flag.Arg(0)
 	srv := service.New(url, port, limit)
 
-	log.Println(srv.Info())
+	logging.Info(srv.Info())
 	srv.Run()
 }
