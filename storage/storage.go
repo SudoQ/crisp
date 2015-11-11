@@ -33,5 +33,9 @@ func (this *Store) Get() (*item.Item, error) {
 	if len(this.items) == 0 {
 		return nil, errors.New("Empty storage")
 	}
-	return this.items[this.current], nil
+	recvItem := this.items[this.current]
+	if recvItem == nil {
+		return nil, errors.New("No data")
+	}
+	return recvItem, nil
 }

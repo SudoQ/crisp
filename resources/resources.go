@@ -43,7 +43,7 @@ func (this *Manager) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	latestItem, err := this.cache.Get()
 	if err != nil {
-		log.Print(err)
+		log.Println(fmt.Sprintf("[ERROR] %s", err))
 		w.WriteHeader(500)
 		return
 	}
@@ -60,14 +60,14 @@ func (this *Manager) CacheHandler(w http.ResponseWriter, r *http.Request) {
 	this.logAccess(r)
 	latestItem, err := this.cache.Get()
 	if err != nil {
-		log.Println(err)
+		log.Println(fmt.Sprintf("[ERROR] %s", err))
 		w.WriteHeader(500)
 		return
 	}
 
 	response, err := latestItem.JSON()
 	if err != nil {
-		log.Println(err)
+		log.Println(fmt.Sprintf("[ERROR] %s", err))
 		w.WriteHeader(500)
 		return
 	}
