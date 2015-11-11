@@ -1,2 +1,2 @@
 # crisp
-Simple API caching service written in Go
+Periodically scrapes provided URL and hosts the data as a RESTful HTTP API
