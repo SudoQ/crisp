@@ -88,10 +88,6 @@ func (this *Service) Info() string {
 }
 
 func (this *Service) Run() {
-	err := this.LoadCache("cache.json")
-	if err != nil {
-		this.logger.Fatal(err)
-	}
 	dataCh := this.ext.DataChannel()
 	defer this.ext.Close()
 	go this.ext.Collect()
