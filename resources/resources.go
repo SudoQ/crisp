@@ -27,7 +27,16 @@ func (this *Manager) Run(rawport string) {
 	http.ListenAndServe(port, r)
 }
 
+func (this *Manager) logAccess(r *http.Request) {
+	log.Println(fmt.Sprintf("[INFO] %s accessed by %s", r.URL, r.RemoteAddr))
+}
+
+func (this *Manager) Info() string {
+	return fmt.Sprintf("Crisp API caching service v0.1")
+}
+
 func (this *Manager) HomeHandler(w http.ResponseWriter, r *http.Request) {
+	this.logAccess(r)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	latestItem, err := this.cache.Get()
@@ -39,16 +48,14 @@ func (this *Manager) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(latestItem.Payload)
 }
 
-func (this *Manager) Info() string {
-	return fmt.Sprintf("Crisp API caching service v0.1")
-}
-
 func (this *Manager) InfoHandler(w http.ResponseWriter, r *http.Request) {
+	this.logAccess(r)
 	w.WriteHeader(200)
 	w.Write([]byte(this.Info()))
 }
 
 func (this *Manager) CacheHandler(w http.ResponseWriter, r *http.Request) {
+	this.logAccess(r)
 	latestItem, err := this.cache.Get()
 	if err != nil {
 		log.Println(err)
