@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/SudoQ/crisp/storage"
 	"github.com/gorilla/mux"
-	"net/http"
 	"log"
+	"net/http"
 )
 
 type Manager struct {
