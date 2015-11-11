@@ -2,21 +2,21 @@ package resources
 
 import (
 	"fmt"
+	"github.com/SudoQ/crisp/logging"
 	"github.com/SudoQ/crisp/storage"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 )
 
 type Manager struct {
 	cache *storage.Store
-	port string
+	port  string
 }
 
 func New(store *storage.Store, port string) *Manager {
 	return &Manager{
 		cache: store,
-		port: "8080",
+		port:  "8080",
 	}
 }
 
@@ -30,7 +30,7 @@ func (this *Manager) Run() {
 }
 
 func (this *Manager) logAccess(r *http.Request) {
-	log.Println(fmt.Sprintf("[INFO] %s accessed by %s", r.URL, r.RemoteAddr))
+	logging.Info(fmt.Sprintf("%s accessed by %s", r.URL, r.RemoteAddr))
 }
 
 func (this *Manager) Info() string {
@@ -43,7 +43,7 @@ func (this *Manager) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	latestItem, err := this.cache.Get()
 	if err != nil {
-		log.Println(fmt.Sprintf("[ERROR] %s", err))
+		logging.Error(err)
 		w.WriteHeader(500)
 		return
 	}
@@ -60,14 +60,14 @@ func (this *Manager) CacheHandler(w http.ResponseWriter, r *http.Request) {
 	this.logAccess(r)
 	latestItem, err := this.cache.Get()
 	if err != nil {
-		log.Println(fmt.Sprintf("[ERROR] %s", err))
+		logging.Error(err)
 		w.WriteHeader(500)
 		return
 	}
 
 	response, err := latestItem.JSON()
 	if err != nil {
-		log.Println(fmt.Sprintf("[ERROR] %s", err))
+		logging.Error(err)
 		w.WriteHeader(500)
 		return
 	}
