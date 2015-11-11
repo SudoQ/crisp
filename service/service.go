@@ -95,16 +95,6 @@ func (this *Service) Run() {
 		for payload := range dataCh {
 			newItem := item.New(time.Now(), payload)
 			this.Cache.Add(newItem)
-			cacheFilename := "cache.json"
-			latestItem, err := this.Cache.Get()
-			if err != nil {
-				this.logger.Fatal(err)
-			}
-			err = latestItem.WriteFile(cacheFilename)
-			if err != nil {
-				this.logger.Fatal(err)
-			}
-			this.logger.Printf("Saved cache to %s\n", cacheFilename)
 		}
 	}()
 
