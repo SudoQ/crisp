@@ -81,10 +81,6 @@ func (this *Service) LoadCache(filename string) error {
 	return nil
 }
 
-func (this *Service) Info() string {
-	return fmt.Sprintf("Crisp API caching service v0.1")
-}
-
 func (this *Service) Run() {
 	dataCh := this.ext.DataChannel()
 	defer this.ext.Close()
