@@ -61,9 +61,12 @@ func (this *Service) Run() {
 	defer this.ext.Close()
 	go this.ext.Collect()
 	go func() {
-		for payload := range dataCh {
-			newItem := item.New(time.Now(), payload)
-			this.Cache.Add(newItem)
+		for {
+			select {
+			case payload := <-dataCh:
+					newItem := item.New(time.Now(), payload)
+					this.Cache.Add(newItem)
+			}
 		}
 	}()
 
