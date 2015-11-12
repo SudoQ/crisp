@@ -2,15 +2,11 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/SudoQ/crisp/external"
 	"github.com/SudoQ/crisp/item"
 	"github.com/SudoQ/crisp/resources"
 	"github.com/SudoQ/crisp/storage"
 	"io/ioutil"
-	"log"
-	"net/url"
-	"os"
 	"time"
 )
 
@@ -20,7 +16,6 @@ type Service struct {
 	Period          time.Duration
 	Limit           uint
 	Cache           *storage.Store
-	logger          *log.Logger
 	ext             *external.Ext
 	resourceManager *resources.Manager
 }
@@ -37,26 +32,15 @@ func New(target, port string, limit uint) *Service {
 		Period:          period,
 		Limit:           limit,
 		Cache:           storage.New(),
-		logger:          nil,
 		ext:             external.New(target, period),
 		resourceManager: nil,
 	}
-	srv.initLogger()
 	srv.initResouceManager()
 	return srv
 }
 
 func (this *Service) initResouceManager() {
 	this.resourceManager = resources.New(this.Cache, this.Port)
-}
-
-func (this *Service) initLogger() {
-	u, err := url.Parse(this.URL)
-	label := u.Host
-	if err != nil {
-		label = "?"
-	}
-	this.logger = log.New(os.Stdin, fmt.Sprintf("crisp[%s]: ", label), log.Lshortfile)
 }
 
 func LimitToPeriod(limit uint) (time.Duration, error) {
