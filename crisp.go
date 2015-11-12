@@ -34,6 +34,5 @@ func main() {
 	url := flag.Arg(0)
 	srv := service.New(url, port, limit)
 
-	logging.Info(srv.Info())
 	srv.Run()
 }
