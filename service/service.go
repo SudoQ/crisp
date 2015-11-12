@@ -43,15 +43,6 @@ func (this *Service) initResouceManager() {
 	this.resourceManager = resources.New(this.Cache, this.Port)
 }
 
-func LimitToPeriod(limit uint) (time.Duration, error) {
-	if limit == 0 {
-		return 0, errors.New("Division with zero")
-	}
-
-	period := (60.0 / float64(limit)) * 60
-	return (time.Duration(period) * time.Second), nil
-}
-
 func (this *Service) LoadCache(filename string) error {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -77,4 +68,13 @@ func (this *Service) Run() {
 	}()
 
 	this.resourceManager.Run()
+}
+
+func LimitToPeriod(limit uint) (time.Duration, error) {
+	if limit == 0 {
+		return 0, errors.New("Division with zero")
+	}
+
+	period := (60.0 / float64(limit)) * 60
+	return (time.Duration(period) * time.Second), nil
 }
