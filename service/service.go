@@ -2,15 +2,11 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/SudoQ/crisp/external"
 	"github.com/SudoQ/crisp/item"
 	"github.com/SudoQ/crisp/resources"
 	"github.com/SudoQ/crisp/storage"
 	"io/ioutil"
-	"log"
-	"net/url"
-	"os"
 	"time"
 )
 
@@ -20,7 +16,6 @@ type Service struct {
 	Period          time.Duration
 	Limit           uint
 	Cache           *storage.Store
-	logger          *log.Logger
 	ext             *external.Ext
 	resourceManager *resources.Manager
 }
@@ -37,35 +32,15 @@ func New(target, port string, limit uint) *Service {
 		Period:          period,
 		Limit:           limit,
 		Cache:           storage.New(),
-		logger:          nil,
 		ext:             external.New(target, period),
 		resourceManager: nil,
 	}
-	srv.initLogger()
 	srv.initResouceManager()
 	return srv
 }
 
 func (this *Service) initResouceManager() {
 	this.resourceManager = resources.New(this.Cache, this.Port)
-}
-
-func (this *Service) initLogger() {
-	u, err := url.Parse(this.URL)
-	label := u.Host
-	if err != nil {
-		label = "?"
-	}
-	this.logger = log.New(os.Stdin, fmt.Sprintf("crisp[%s]: ", label), log.Lshortfile)
-}
-
-func LimitToPeriod(limit uint) (time.Duration, error) {
-	if limit == 0 {
-		return 0, errors.New("Division with zero")
-	}
-
-	period := (60.0 / float64(limit)) * 60
-	return (time.Duration(period) * time.Second), nil
 }
 
 func (this *Service) LoadCache(filename string) error {
@@ -81,20 +56,28 @@ func (this *Service) LoadCache(filename string) error {
 	return nil
 }
 
-func (this *Service) Info() string {
-	return fmt.Sprintf("Crisp API caching service v0.1")
-}
-
 func (this *Service) Run() {
 	dataCh := this.ext.DataChannel()
 	defer this.ext.Close()
 	go this.ext.Collect()
 	go func() {
-		for payload := range dataCh {
-			newItem := item.New(time.Now(), payload)
-			this.Cache.Add(newItem)
+		for {
+			select {
+			case payload := <-dataCh:
+					newItem := item.New(time.Now(), payload)
+					this.Cache.Add(newItem)
+			}
 		}
 	}()
 
 	this.resourceManager.Run()
+}
+
+func LimitToPeriod(limit uint) (time.Duration, error) {
+	if limit == 0 {
+		return 0, errors.New("Division with zero")
+	}
+
+	period := (60.0 / float64(limit)) * 60
+	return (time.Duration(period) * time.Second), nil
 }
