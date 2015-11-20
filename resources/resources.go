@@ -2,8 +2,8 @@ package resources
 
 import (
 	"fmt"
-	"github.com/SudoQ/crisp/logging"
-	"github.com/SudoQ/crisp/storage"
+	"github.com/SudoQ/satchel/logging"
+	"github.com/SudoQ/satchel/storage"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -34,7 +34,7 @@ func (this *Manager) logAccess(r *http.Request) {
 }
 
 func (this *Manager) Info() string {
-	return fmt.Sprintf("Crisp Service v0.1")
+	return fmt.Sprintf("Satchel Service v0.1")
 }
 
 func (this *Manager) HomeHandler(w http.ResponseWriter, r *http.Request) {

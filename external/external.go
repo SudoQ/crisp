@@ -2,7 +2,7 @@ package external
 
 import (
 	"fmt"
-	"github.com/SudoQ/crisp/logging"
+	"github.com/SudoQ/satchel/logging"
 	"io/ioutil"
 	"net/http"
 	"time"
