@@ -5,13 +5,13 @@
 
 Periodically scrapes provided URL and hosts the data as a RESTful HTTP API
 
-#Docker usage
+## Docker usage
 ```
 $ docker pull sudoq/satchel:master
 $ docker run -p 80:8080 satchel <URL>
 ```
 
-#Example
+## Example
 ```
 $ docker run -p 80:8080 satchel https://api.github.com/events
 $ curl localhost
