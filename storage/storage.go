@@ -2,7 +2,7 @@ package storage
 
 import (
 	"errors"
-	"github.com/SudoQ/crisp/item"
+	"github.com/SudoQ/satchel/item"
 )
 
 type Store struct {

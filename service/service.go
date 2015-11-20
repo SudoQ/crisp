@@ -2,10 +2,10 @@ package service
 
 import (
 	"errors"
-	"github.com/SudoQ/crisp/external"
-	"github.com/SudoQ/crisp/item"
-	"github.com/SudoQ/crisp/resources"
-	"github.com/SudoQ/crisp/storage"
+	"github.com/SudoQ/satchel/external"
+	"github.com/SudoQ/satchel/item"
+	"github.com/SudoQ/satchel/resources"
+	"github.com/SudoQ/satchel/storage"
 	"io/ioutil"
 	"time"
 )

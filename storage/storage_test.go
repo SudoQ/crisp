@@ -2,7 +2,7 @@ package storage
 
 import (
 	"fmt"
-	"github.com/SudoQ/crisp/item"
+	"github.com/SudoQ/satchel/item"
 	"testing"
 	"time"
 )
