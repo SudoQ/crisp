@@ -8,11 +8,11 @@ Periodically scrapes provided URL and hosts the data as a RESTful HTTP API
 ## Docker usage
 ```
 $ docker pull sudoq/satchel:master
-$ docker run -p 80:8080 --rm satchel <URL>
+$ docker run -p 80:8080 --rm sudoq/satchel:master <URL>
 ```
 
 ## Example
 ```
-$ docker run -p 80:8080 --rm satchel https://api.github.com/events
+$ docker run -p 80:8080 --rm sudoq/satchel:master https://api.github.com/events
 $ curl localhost
 ```
