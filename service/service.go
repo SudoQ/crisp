@@ -64,8 +64,8 @@ func (this *Service) Run() {
 		for {
 			select {
 			case payload := <-dataCh:
-					newItem := item.New(time.Now(), payload)
-					this.Cache.Add(newItem)
+				newItem := item.New(time.Now(), payload)
+				this.Cache.Add(newItem)
 			}
 		}
 	}()

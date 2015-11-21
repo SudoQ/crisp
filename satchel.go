@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/SudoQ/satchel/service"
 	"github.com/SudoQ/satchel/logging"
+	"github.com/SudoQ/satchel/service"
 	"runtime"
 )
 
