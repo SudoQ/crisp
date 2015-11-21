@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/SudoQ/satchel/logging"
 	"github.com/SudoQ/satchel/service"
 	"runtime"
 )
@@ -19,16 +18,17 @@ func init() {
 	flag.UintVar(&limit, "l", 60, "Limit of requests per hour (shorthand)")
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	flag.Usage = func() {
+		fmt.Printf("Usage: satchel [options] URL\n")
+		flag.PrintDefaults()
+	}
 }
 
 func main() {
 	flag.Parse()
 
 	if len(flag.Args()) != 1 {
-		logging.Info(
-			fmt.Sprintf("Usage: \n\t%s\n\t%s",
-				"satchel [-p=port] [-l=limit] <url>",
-				"satchel -f=<file>"))
+		flag.Usage()
 		return
 	}
 	url := flag.Arg(0)
